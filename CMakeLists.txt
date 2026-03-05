@@ -1,6 +1,6 @@
 project(beast-library)
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.10)
 
 SET(BEAST_LIBRARY_PACKAGE_VERSION_MAJOR 1)
 SET(BEAST_LIBRARY_PACKAGE_VERSION_MINOR 1)
