@@ -1,0 +1,44 @@
+name: ci
+
+# These repositories install scripts, perl modules and data — nothing is
+# compiled — so CI is a configure + install smoke test plus a syntax check of
+# what they ship. Mirrors the superbuild CI in minc-toolkit-v2.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    container: 'ubuntu:24.04'
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Install build deps
+        run: |
+          apt-get update
+          # These repos compile nothing, but their project() calls do not say
+          # LANGUAGES NONE, so CMake still insists on a working compiler.
+          apt-get install -y build-essential cmake git
+      - name: Allow git to read the workspace owned by the runner user
+        run: git config --global --add safe.directory '*'
+      - uses: actions/checkout@v7
+      - name: Configure + install
+        run: |
+          set -euxo pipefail
+          cmake -B build -DCMAKE_INSTALL_PREFIX="$PWD/install"
+          cmake --build build
+          cmake --install build
+
